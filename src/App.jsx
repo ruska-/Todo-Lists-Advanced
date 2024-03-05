@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { createContext, useEffect, useReducer } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
 
@@ -10,6 +10,8 @@ const ACTIONS = {
   ADD_TODO: "ADD_TODO",
   DELETE_TODO: "DELETE_TODO",
 };
+
+export const TodoContext = createContext();
 
 function App() {
   const [state, dispatch] = useReducer(
@@ -37,7 +39,6 @@ function App() {
       case ACTIONS.RESET_TODO_NAME:
         return { ...state, newTodoName: "" };
       case ACTIONS.MARK_TODO:
-        console.log("m")
         return {
           ...state,
           todosArr: state.todosArr.map((todo) => {
@@ -78,9 +79,7 @@ function App() {
   function handleSubmit(e) {
     e.preventDefault();
     dispatch({ type: ACTIONS.ADD_TODO });
-
   }
-  
 
   return (
     <>
@@ -93,10 +92,16 @@ function App() {
               checked={todoItem.checked}
               todoName={todoItem.todoName}
               markTodo={() =>
-                dispatch({ type: ACTIONS.MARK_TODO, payload: {id: todoItem.id} })
+                dispatch({
+                  type: ACTIONS.MARK_TODO,
+                  payload: { id: todoItem.id },
+                })
               }
               deleteTodo={() =>
-                dispatch({ type: ACTIONS.DELETE_TODO, payload: {id: todoItem.id} })
+                dispatch({
+                  type: ACTIONS.DELETE_TODO,
+                  payload: { id: todoItem.id },
+                })
               }
             ></Todo>
           ))}
