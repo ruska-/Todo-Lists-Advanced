@@ -4,27 +4,31 @@ import { Todo } from "./Todo";
 import { useLocalStorage } from "./useLocalStorage";
 
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
+const ACTIONS = {
+  NEW_TODO_NAME: "NEW_TODO",
+  RESET_TODO_NAME: "",
+};
 
 function App() {
-  const [newTodoName, dispatch] = useReducer(reducer, "");
-
-  //const [newTodoName, setNewTodoName] = useState("");
+  const [state, dispatch] = useReducer(reducer, { newTodoName: "" });
   const [todosArr, setTodosArr] = useLocalStorage(LOCAL_STORAGE_KEY, []);
 
   function reducer(state, { type, payload }) {
     switch (type) {
-      case "NEW_NAME":
-        return payload;
-      case "RESET":
-        return "";
+      case ACTIONS.NEW_TODO_NAME:
+        return { ...state, newTodoName: payload };
+      case ACTIONS.RESET_TODO_NAME:
+        return { ...state, newTodoName: "" };
+      default:
+        return state;
     }
   }
 
   const createTodo = () => {
-    if (newTodoName !== "") {
+    if (state.newTodoName !== "") {
       const id = crypto.randomUUID();
       const newTodoItem = {
-        todoName: newTodoName,
+        todoName: state.newTodoName,
         checked: false,
         markTodo: () => markTodo(id),
         deleteTodo: () => deleteTodo(id),
@@ -32,7 +36,7 @@ function App() {
       };
 
       setTodosArr((arr) => [...arr, newTodoItem]);
-      dispatch({ type: "RESET" });
+      dispatch({ type: ACTIONS.RESET_TODO_NAME });
     } else console.log("name is empty");
   };
 
@@ -80,11 +84,10 @@ function App() {
         <label htmlFor="todo-input">New Todo</label>
         <input
           type="text"
-          value={newTodoName}
+          value={state.newTodoName}
           id="todo-input"
           onChange={(e) => {
-            dispatch({ type: "NEW_NAME", payload: e.target.value });
-            //setNewTodoName(e.target.value);
+            dispatch({ type: ACTIONS.NEW_TODO_NAME, payload: e.target.value });
           }}
         ></input>
         <button>Add Todo</button>
