@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
+import { useLocalStorage } from "./useLocalStorage";
+
+const LOCAL_STORAGE_KEY = "TODO_ITEMS";
 
 function App() {
   const [newTodoName, setNewTodoName] = useState("");
-  const [todosArr, setTodosArr] = useState([]);
+  const [todosArr, setTodosArr] = useLocalStorage(LOCAL_STORAGE_KEY, []);
 
   const createTodo = () => {
     if (newTodoName !== "") {
@@ -18,11 +21,13 @@ function App() {
       };
 
       setTodosArr((arr) => [...arr, newTodoItem]);
+
       setNewTodoName("");
     } else console.log("name is empty");
   };
 
   const markTodo = function (id) {
+    console.log("aq", id);
     setTodosArr((prevArr) => {
       return prevArr.map((todo) => {
         if (todo.id === id) {
@@ -50,8 +55,8 @@ function App() {
               id={todoItem.id}
               checked={todoItem.checked}
               todoName={todoItem.todoName}
-              markTodo={todoItem.markTodo}
-              deleteTodo={todoItem.deleteTodo}
+              markTodo={() => markTodo(todoItem.id)}
+              deleteTodo={() => deleteTodo(todoItem.id)}
             ></Todo>
           ))}
         </ul>
