@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
 import { useLocalStorage } from "./useLocalStorage";
@@ -6,8 +6,19 @@ import { useLocalStorage } from "./useLocalStorage";
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
 
 function App() {
-  const [newTodoName, setNewTodoName] = useState("");
+  const [newTodoName, dispatch] = useReducer(reducer, "");
+
+  //const [newTodoName, setNewTodoName] = useState("");
   const [todosArr, setTodosArr] = useLocalStorage(LOCAL_STORAGE_KEY, []);
+
+  function reducer(state, { type, payload }) {
+    switch (type) {
+      case "NEW_NAME":
+        return payload;
+      case "RESET":
+        return "";
+    }
+  }
 
   const createTodo = () => {
     if (newTodoName !== "") {
@@ -21,8 +32,7 @@ function App() {
       };
 
       setTodosArr((arr) => [...arr, newTodoItem]);
-
-      setNewTodoName("");
+      dispatch({ type: "RESET" });
     } else console.log("name is empty");
   };
 
@@ -45,6 +55,11 @@ function App() {
     );
   };
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    createTodo();
+  }
+
   return (
     <>
       <div>
@@ -61,18 +76,19 @@ function App() {
           ))}
         </ul>
       </div>
-      <div id="new-todo-form">
+      <form onSubmit={handleSubmit} id="new-todo-form">
         <label htmlFor="todo-input">New Todo</label>
         <input
           type="text"
           value={newTodoName}
           id="todo-input"
           onChange={(e) => {
-            setNewTodoName(e.target.value);
+            dispatch({ type: "NEW_NAME", payload: e.target.value });
+            //setNewTodoName(e.target.value);
           }}
         ></input>
-        <button onClick={createTodo}>Add Todo</button>
-      </div>
+        <button>Add Todo</button>
+      </form>
     </>
   );
 }
