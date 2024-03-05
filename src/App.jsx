@@ -1,4 +1,4 @@
-import { createContext, useEffect, useReducer } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
 
@@ -11,22 +11,17 @@ const ACTIONS = {
   DELETE_TODO: "DELETE_TODO",
 };
 
-export const TodoContext = createContext();
-
 function App() {
-  const [state, dispatch] = useReducer(
-    reducer,
-    { newTodoName: "", todosArr: [] },
-    () => {
-      let result = { newTodoName: "", todosArr: [] };
-      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedValue !== null) {
-        result = { ...result, todosArr: JSON.parse(storedValue) };
-      }
-
-      return result;
+  const nameRef = useRef();
+  const [state, dispatch] = useReducer(reducer, { todosArr: [] }, () => {
+    let result = { todosArr: [] };
+    const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedValue !== null) {
+      result = { ...result, todosArr: JSON.parse(storedValue) };
     }
-  );
+
+    return result;
+  });
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.todosArr));
@@ -34,10 +29,6 @@ function App() {
 
   function reducer(state, { type, payload }) {
     switch (type) {
-      case ACTIONS.NEW_TODO_NAME:
-        return { ...state, newTodoName: payload };
-      case ACTIONS.RESET_TODO_NAME:
-        return { ...state, newTodoName: "" };
       case ACTIONS.MARK_TODO:
         return {
           ...state,
@@ -55,10 +46,10 @@ function App() {
           todosArr: state.todosArr.filter((todo) => todo.id !== payload.id),
         };
       case ACTIONS.ADD_TODO:
-        if (state.newTodoName === "") return state;
+        if (nameRef.current.value === "") return state;
         else {
           const newTodoItem = {
-            todoName: state.newTodoName,
+            todoName: nameRef.current.value,
             checked: false,
             markTodo: () => markTodo(id),
             deleteTodo: () => deleteTodo(id),
@@ -68,7 +59,6 @@ function App() {
           return {
             ...state,
             todosArr: [...state.todosArr, newTodoItem],
-            todoName: "",
           };
         }
       default:
@@ -79,6 +69,7 @@ function App() {
   function handleSubmit(e) {
     e.preventDefault();
     dispatch({ type: ACTIONS.ADD_TODO });
+    nameRef.current.value = "";
   }
 
   return (
@@ -110,12 +101,13 @@ function App() {
       <form onSubmit={handleSubmit} id="new-todo-form">
         <label htmlFor="todo-input">New Todo</label>
         <input
+          ref={nameRef}
           type="text"
-          value={state.newTodoName}
+          //  value={state.newTodoName}
           id="todo-input"
-          onChange={(e) => {
-            dispatch({ type: ACTIONS.NEW_TODO_NAME, payload: e.target.value });
-          }}
+          // onChange={(e) => {
+          //   dispatch({ type: ACTIONS.NEW_TODO_NAME, payload: e.target.value });
+          // }}
         ></input>
         <button>Add Todo</button>
       </form>
