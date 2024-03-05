@@ -5,7 +5,7 @@ export function Todo({ checked, todoName, markTodo, deleteTodo }) {
         <label className="list-item-label">
           <input
             type="checkbox"
-            onChange={()=> {markTodo(); console.log("ha")}}
+            onChange={markTodo}
             defaultChecked={checked}
             data-list-item-checkbox
           />

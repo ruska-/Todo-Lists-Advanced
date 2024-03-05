@@ -1,17 +1,34 @@
-import { useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
-import { useLocalStorage } from "./useLocalStorage";
 
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
 const ACTIONS = {
   NEW_TODO_NAME: "NEW_TODO",
   RESET_TODO_NAME: "",
+  MARK_TODO: "MARK_TODO",
+  ADD_TODO: "ADD_TODO",
+  DELETE_TODO: "DELETE_TODO",
 };
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, { newTodoName: "" });
-  const [todosArr, setTodosArr] = useLocalStorage(LOCAL_STORAGE_KEY, []);
+  const [state, dispatch] = useReducer(
+    reducer,
+    { newTodoName: "", todosArr: [] },
+    () => {
+      let result = { newTodoName: "", todosArr: [] };
+      const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (storedValue !== null) {
+        result = { ...result, todosArr: JSON.parse(storedValue) };
+      }
+
+      return result;
+    }
+  );
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.todosArr));
+  }, [state.todosArr, LOCAL_STORAGE_KEY]);
 
   function reducer(state, { type, payload }) {
     switch (type) {
@@ -19,63 +36,68 @@ function App() {
         return { ...state, newTodoName: payload };
       case ACTIONS.RESET_TODO_NAME:
         return { ...state, newTodoName: "" };
+      case ACTIONS.MARK_TODO:
+        console.log("m")
+        return {
+          ...state,
+          todosArr: state.todosArr.map((todo) => {
+            if (todo.id === payload.id) {
+              return { ...todo, checked: !todo.checked };
+            } else {
+              return todo;
+            }
+          }),
+        };
+      case ACTIONS.DELETE_TODO:
+        return {
+          ...state,
+          todosArr: state.todosArr.filter((todo) => todo.id !== payload.id),
+        };
+      case ACTIONS.ADD_TODO:
+        if (state.newTodoName === "") return state;
+        else {
+          const newTodoItem = {
+            todoName: state.newTodoName,
+            checked: false,
+            markTodo: () => markTodo(id),
+            deleteTodo: () => deleteTodo(id),
+            id: crypto.randomUUID(),
+          };
+
+          return {
+            ...state,
+            todosArr: [...state.todosArr, newTodoItem],
+            todoName: "",
+          };
+        }
       default:
         return state;
     }
   }
 
-  const createTodo = () => {
-    if (state.newTodoName !== "") {
-      const id = crypto.randomUUID();
-      const newTodoItem = {
-        todoName: state.newTodoName,
-        checked: false,
-        markTodo: () => markTodo(id),
-        deleteTodo: () => deleteTodo(id),
-        id: id,
-      };
-
-      setTodosArr((arr) => [...arr, newTodoItem]);
-      dispatch({ type: ACTIONS.RESET_TODO_NAME });
-    } else console.log("name is empty");
-  };
-
-  const markTodo = function (id) {
-    console.log("aq", id);
-    setTodosArr((prevArr) => {
-      return prevArr.map((todo) => {
-        if (todo.id === id) {
-          return { ...todo, checked: !todo.checked };
-        } else {
-          return todo;
-        }
-      });
-    });
-  };
-
-  const deleteTodo = (id) => {
-    setTodosArr((prevTodosArr) =>
-      prevTodosArr.filter((todo) => todo.id !== id)
-    );
-  };
-
   function handleSubmit(e) {
     e.preventDefault();
-    createTodo();
+    dispatch({ type: ACTIONS.ADD_TODO });
+
   }
+  
 
   return (
     <>
       <div>
         <ul>
-          {todosArr.map((todoItem) => (
+          {state.todosArr.map((todoItem) => (
             <Todo
               key={todoItem.id}
               id={todoItem.id}
               checked={todoItem.checked}
               todoName={todoItem.todoName}
-              markTodo={() => markTodo(todoItem.id)}
-              deleteTodo={() => deleteTodo(todoItem.id)}
+              markTodo={() =>
+                dispatch({ type: ACTIONS.MARK_TODO, payload: {id: todoItem.id} })
+              }
+              deleteTodo={() =>
+                dispatch({ type: ACTIONS.DELETE_TODO, payload: {id: todoItem.id} })
+              }
             ></Todo>
           ))}
         </ul>
