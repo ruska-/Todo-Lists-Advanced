@@ -1,13 +1,10 @@
 import {
   createContext,
-  useContext,
   useEffect,
   useReducer,
-  useRef,
   useState,
 } from "react";
 import "./styles.css";
-import { Todo } from "./Todo";
 import { NewTodoForm } from "./NewTodoForm";
 import { TodoList } from "./TodoList";
 import { TodoFilterForm } from "./TodoFilterForm";
