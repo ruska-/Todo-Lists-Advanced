@@ -99,7 +99,7 @@ function App() {
       value={{
         todos: filteredTodos,
         addTodo,
-        markCompleted,
+        markTodo: markCompleted,
         deleteTodo,
         editTodo,
       }}

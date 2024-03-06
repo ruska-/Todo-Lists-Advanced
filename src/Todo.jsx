@@ -1,11 +1,8 @@
-export function Todo({
-  checked,
-  todoName,
-  id,
-  markTodo,
-  deleteTodo,
-  editTodo,
-}) {
+import { useContext } from "react";
+import { TodoContext } from "./App";
+
+export function Todo({ checked, todoName, id }) {
+  const { markTodo, deleteTodo, editTodo } = useContext(TodoContext);
   return (
     <>
       <li className="list-item">
