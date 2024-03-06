@@ -62,11 +62,7 @@ function App() {
           ...todos,
           todosArr: [
             ...todos.todosArr,
-            {
-              todoName: payload.name,
-              checked: false,
-              id: crypto.randomUUID(),
-            },
+            { todoName: payload.name, checked: false, id: crypto.randomUUID() },
           ],
         };
       case ACTIONS.EDIT_TODO:
@@ -78,6 +74,20 @@ function App() {
 
   function addTodo(name) {
     dispatch({ type: ACTIONS.ADD_TODO, payload: { name } });
+  }
+
+  function markCompleted(id) {
+    dispatch({
+      type: ACTIONS.MARK_TODO,
+      payload: { id: id },
+    });
+  }
+
+  function deleteTodo(id) {
+    dispatch({
+      type: ACTIONS.DELETE_TODO,
+      payload: { id: id },
+    });
   }
 
   function handleFilterSubmit(e) {
@@ -131,18 +141,8 @@ function App() {
               id={todoItem.id}
               checked={todoItem.checked}
               todoName={todoItem.todoName}
-              markTodo={() =>
-                dispatch({
-                  type: ACTIONS.MARK_TODO,
-                  payload: { id: todoItem.id },
-                })
-              }
-              deleteTodo={() =>
-                dispatch({
-                  type: ACTIONS.DELETE_TODO,
-                  payload: { id: todoItem.id },
-                })
-              }
+              markTodo={() => markCompleted(todoItem.id)}
+              deleteTodo={() => deleteTodo(todoItem.id)}
               editTodo={() =>
                 dispatch({
                   type: ACTIONS.EDIT_TODO,
