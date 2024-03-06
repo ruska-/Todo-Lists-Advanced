@@ -1,8 +1,9 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
 
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
+const LOCAL_STORAGE_HIDE = "TODO_HIDE_COMPLETED";
 const ACTIONS = {
   NEW_TODO_NAME: "NEW_TODO",
   RESET_TODO_NAME: "",
@@ -12,7 +13,7 @@ const ACTIONS = {
 };
 
 function App() {
-  const nameRef = useRef();
+  const newTodoRef = useRef();
   const [state, dispatch] = useReducer(reducer, { todosArr: [] }, () => {
     let result = { todosArr: [] };
     const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -22,6 +23,15 @@ function App() {
 
     return result;
   });
+
+  const [filterValue, setFilterValue] = useState("");
+  const [hideCompleted, setHideCompleted] = useState(() => {
+    let storedValue = localStorage.getItem(LOCAL_STORAGE_HIDE);
+    if (storedValue !== null && storedValue === "true") return true;
+    else return false;
+  });
+
+  let todosArrayToShow = filterArray();
 
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.todosArr));
@@ -46,10 +56,10 @@ function App() {
           todosArr: state.todosArr.filter((todo) => todo.id !== payload.id),
         };
       case ACTIONS.ADD_TODO:
-        if (nameRef.current.value === "") return state;
+        if (newTodoRef.current.value === "") return state;
         else {
           const newTodoItem = {
-            todoName: nameRef.current.value,
+            todoName: newTodoRef.current.value,
             checked: false,
             markTodo: () => markTodo(id),
             deleteTodo: () => deleteTodo(id),
@@ -69,14 +79,54 @@ function App() {
   function handleSubmit(e) {
     e.preventDefault();
     dispatch({ type: ACTIONS.ADD_TODO });
-    nameRef.current.value = "";
+  }
+
+  function handleFilterSubmit(e) {
+    e.preventDefault();
+    setFilterValue("");
+  }
+
+  function filterArray() {
+    let resultArr = state.todosArr.filter((td) => {
+      if (td.todoName.includes(filterValue)) {
+        if (!hideCompleted || !td.checked) {
+          return td;
+        }
+      }
+    });
+
+    return resultArr;
   }
 
   return (
     <>
+      <form onSubmit={handleFilterSubmit} className="filter-form">
+        <div className="filter-form-group">
+          <label htmlFor="name">Name</label>
+          <input
+            type="text"
+            id="name"
+            value={filterValue}
+            onChange={(e) => {
+              setFilterValue(e.target.value);
+            }}
+          />
+        </div>
+        <label>
+          <input
+            type="checkbox"
+            checked={hideCompleted}
+            onChange={(e) => {
+              localStorage.setItem(LOCAL_STORAGE_HIDE, !hideCompleted);
+              setHideCompleted(!hideCompleted);
+            }}
+          />
+          Hide Completed
+        </label>
+      </form>
       <div>
         <ul>
-          {state.todosArr.map((todoItem) => (
+          {todosArrayToShow.map((todoItem) => (
             <Todo
               key={todoItem.id}
               id={todoItem.id}
@@ -100,15 +150,7 @@ function App() {
       </div>
       <form onSubmit={handleSubmit} id="new-todo-form">
         <label htmlFor="todo-input">New Todo</label>
-        <input
-          ref={nameRef}
-          type="text"
-          //  value={state.newTodoName}
-          id="todo-input"
-          // onChange={(e) => {
-          //   dispatch({ type: ACTIONS.NEW_TODO_NAME, payload: e.target.value });
-          // }}
-        ></input>
+        <input ref={newTodoRef} type="text" id="todo-input"></input>
         <button>Add Todo</button>
       </form>
     </>

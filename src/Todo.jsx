@@ -6,7 +6,7 @@ export function Todo({ checked, todoName, markTodo, deleteTodo }) {
           <input
             type="checkbox"
             onChange={markTodo}
-            defaultChecked={checked}
+            checked={checked}
             data-list-item-checkbox
           />
           <span data-list-item-text>{todoName}</span>
