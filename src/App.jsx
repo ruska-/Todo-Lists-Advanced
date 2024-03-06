@@ -10,6 +10,7 @@ import "./styles.css";
 import { Todo } from "./Todo";
 import { NewTodoForm } from "./NewTodoForm";
 import { TodoList } from "./TodoList";
+import { TodoFilterForm } from "./TodoFilterForm";
 
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
 const LOCAL_STORAGE_HIDE = "TODO_HIDE_COMPLETED";
@@ -83,11 +84,6 @@ function App() {
     dispatch({ type: ACTIONS.EDIT_TODO, payload: { id: id } });
   }
 
-  function handleFilterSubmit(e) {
-    e.preventDefault();
-    setFilterValue("");
-  }
-
   const filteredTodos = todos.filter((td) => {
     if (td.todoName.includes(filterValue)) {
       if (!hideCompleted || !td.checked) return td;
@@ -104,28 +100,13 @@ function App() {
         editTodo,
       }}
     >
-      <form onSubmit={handleFilterSubmit} className="filter-form">
-        <div className="filter-form-group">
-          <label htmlFor="name">Name</label>
-          <input
-            type="text"
-            id="name"
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-          />
-        </div>
-        <label>
-          <input
-            type="checkbox"
-            checked={hideCompleted}
-            onChange={() => {
-              localStorage.setItem(LOCAL_STORAGE_HIDE, !hideCompleted);
-              setHideCompleted(!hideCompleted);
-            }}
-          />
-          Hide Completed
-        </label>
-      </form>
+      <TodoFilterForm
+        setFilterValue={setFilterValue}
+        filterValue={filterValue}
+        hideCompleted={hideCompleted}
+        setHideCompleted={setHideCompleted}
+        LOCAL_STORAGE_HIDE={LOCAL_STORAGE_HIDE}
+      ></TodoFilterForm>
 
       <TodoList></TodoList>
 
