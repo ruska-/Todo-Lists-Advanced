@@ -71,17 +71,14 @@ function App() {
   }
 
   function markCompleted(id) {
-    dispatch({
-      type: ACTIONS.MARK_TODO,
-      payload: { id: id },
-    });
+    dispatch({ type: ACTIONS.MARK_TODO, payload: { id: id } });
   }
 
   function deleteTodo(id) {
-    dispatch({
-      type: ACTIONS.DELETE_TODO,
-      payload: { id: id },
-    });
+    dispatch({ type: ACTIONS.DELETE_TODO, payload: { id: id } });
+  }
+  function editTodo(id) {
+    dispatch({ type: ACTIONS.EDIT_TODO, payload: { id: id } });
   }
 
   function handleFilterSubmit(e) {
@@ -132,17 +129,10 @@ function App() {
           {todosArrayToShow.map((todoItem) => (
             <Todo
               key={todoItem.id}
-              id={todoItem.id}
-              checked={todoItem.checked}
-              todoName={todoItem.todoName}
-              markTodo={() => markCompleted(todoItem.id)}
-              deleteTodo={() => deleteTodo(todoItem.id)}
-              editTodo={() =>
-                dispatch({
-                  type: ACTIONS.EDIT_TODO,
-                  payload: { id: todoItem.id },
-                })
-              }
+              {...todoItem}
+              markTodo={markCompleted}
+              deleteTodo={deleteTodo}
+              editTodo={editTodo}
             ></Todo>
           ))}
         </ul>
