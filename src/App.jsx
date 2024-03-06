@@ -15,11 +15,11 @@ const ACTIONS = {
 };
 
 function App() {
-  const [todos, dispatch] = useReducer(reducer, { todosArr: [] }, () => {
-    let result = { todosArr: [] };
+  const [todos, dispatch] = useReducer(reducer, [], () => {
+    let result = [];
     const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedValue !== null) {
-      result = { ...result, todosArr: JSON.parse(storedValue) };
+      result = JSON.parse(storedValue);
     }
 
     return result;
@@ -36,35 +36,29 @@ function App() {
   let todosArrayToShow = filterArray();
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos.todosArr));
-  }, [todos.todosArr, LOCAL_STORAGE_KEY]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+  }, [todos, LOCAL_STORAGE_KEY]);
 
   function reducer(todos, { type, payload }) {
     switch (type) {
       case ACTIONS.MARK_TODO:
-        return {
-          ...todos,
-          todosArr: todos.todosArr.map((todo) => {
-            if (todo.id === payload.id) {
-              return { ...todo, checked: !todo.checked };
-            } else {
-              return todo;
-            }
-          }),
-        };
+        return todos.map((todo) => {
+          if (todo.id === payload.id) {
+            return { ...todo, checked: !todo.checked };
+          } else {
+            return todo;
+          }
+        });
+
       case ACTIONS.DELETE_TODO:
-        return {
-          ...todos,
-          todosArr: todos.todosArr.filter((todo) => todo.id !== payload.id),
-        };
+        return todos.filter((todo) => todo.id !== payload.id);
+
       case ACTIONS.ADD_TODO:
-        return {
+        return [
           ...todos,
-          todosArr: [
-            ...todos.todosArr,
-            { todoName: payload.name, checked: false, id: crypto.randomUUID() },
-          ],
-        };
+          { todoName: payload.name, checked: false, id: crypto.randomUUID() },
+        ];
+
       case ACTIONS.EDIT_TODO:
         return todos;
       default:
@@ -96,7 +90,7 @@ function App() {
   }
 
   function filterArray() {
-    let resultArr = todos.todosArr.filter((td) => {
+    let resultArr = todos.filter((td) => {
       if (td.todoName.includes(filterValue)) {
         if (!hideCompleted || !td.checked) {
           return td;
