@@ -3,8 +3,11 @@ import { useRef } from "react";
 export function NewTodoForm({ addTodo }) {
   function handleSubmit(e) {
     e.preventDefault();
+
     if (newTodoRef.current.value === "") return;
+
     addTodo(newTodoRef.current.value);
+    
     newTodoRef.current.value = "";
   }
 

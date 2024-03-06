@@ -2,6 +2,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
 import { NewTodoForm } from "./NewTodoForm";
+import { TodoList } from "./TodoList";
 
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
 const LOCAL_STORAGE_HIDE = "TODO_HIDE_COMPLETED";
@@ -14,16 +15,41 @@ const ACTIONS = {
   EDIT_TODO: "EDIT_TODO",
 };
 
+function reducer(todos, { type, payload }) {
+  switch (type) {
+    case ACTIONS.MARK_TODO:
+      return todos.map((todo) => {
+        if (todo.id === payload.id) return { ...todo, checked: !todo.checked };
+        else return todo;
+      });
+
+    case ACTIONS.DELETE_TODO:
+      return todos.filter((todo) => todo.id !== payload.id);
+
+    case ACTIONS.ADD_TODO:
+      return [
+        ...todos,
+        { todoName: payload.name, checked: false, id: crypto.randomUUID() },
+      ];
+
+    case ACTIONS.EDIT_TODO:
+      return todos;
+
+    default:
+      return todos;
+  }
+}
+
 function App() {
   const [todos, dispatch] = useReducer(reducer, [], () => {
-    let result = [];
     const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedValue !== null) {
-      result = JSON.parse(storedValue);
-    }
 
-    return result;
+    return storedValue !== null ? JSON.parse(storedValue) : [];
   });
+
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+  }, [todos, LOCAL_STORAGE_KEY]);
 
   const [filterValue, setFilterValue] = useState("");
 
@@ -33,38 +59,7 @@ function App() {
     else return false;
   });
 
-  let todosArrayToShow = filterArray();
-
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
-  }, [todos, LOCAL_STORAGE_KEY]);
-
-  function reducer(todos, { type, payload }) {
-    switch (type) {
-      case ACTIONS.MARK_TODO:
-        return todos.map((todo) => {
-          if (todo.id === payload.id) {
-            return { ...todo, checked: !todo.checked };
-          } else {
-            return todo;
-          }
-        });
-
-      case ACTIONS.DELETE_TODO:
-        return todos.filter((todo) => todo.id !== payload.id);
-
-      case ACTIONS.ADD_TODO:
-        return [
-          ...todos,
-          { todoName: payload.name, checked: false, id: crypto.randomUUID() },
-        ];
-
-      case ACTIONS.EDIT_TODO:
-        return todos;
-      default:
-        return todos;
-    }
-  }
+  let filteredArray = filterArray();
 
   function addTodo(name) {
     dispatch({ type: ACTIONS.ADD_TODO, payload: { name } });
@@ -89,9 +84,7 @@ function App() {
   function filterArray() {
     let resultArr = todos.filter((td) => {
       if (td.todoName.includes(filterValue)) {
-        if (!hideCompleted || !td.checked) {
-          return td;
-        }
+        if (!hideCompleted || !td.checked) return td;
       }
     });
 
@@ -107,16 +100,14 @@ function App() {
             type="text"
             id="name"
             value={filterValue}
-            onChange={(e) => {
-              setFilterValue(e.target.value);
-            }}
+            onChange={(e) => setFilterValue(e.target.value)}
           />
         </div>
         <label>
           <input
             type="checkbox"
             checked={hideCompleted}
-            onChange={(e) => {
+            onChange={() => {
               localStorage.setItem(LOCAL_STORAGE_HIDE, !hideCompleted);
               setHideCompleted(!hideCompleted);
             }}
@@ -124,19 +115,14 @@ function App() {
           Hide Completed
         </label>
       </form>
-      <div>
-        <ul>
-          {todosArrayToShow.map((todoItem) => (
-            <Todo
-              key={todoItem.id}
-              {...todoItem}
-              markTodo={markCompleted}
-              deleteTodo={deleteTodo}
-              editTodo={editTodo}
-            ></Todo>
-          ))}
-        </ul>
-      </div>
+
+      <TodoList
+        filteredArray={filterArray()}
+        markCompleted={markCompleted}
+        deleteTodo={deleteTodo}
+        editTodo={editTodo}
+      ></TodoList>
+
       <NewTodoForm addTodo={addTodo}></NewTodoForm>
     </>
   );
