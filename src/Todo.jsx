@@ -1,4 +1,4 @@
-export function Todo({ checked, todoName, markTodo, deleteTodo }) {
+export function Todo({ checked, todoName, markTodo, deleteTodo, editTodo }) {
   return (
     <>
       <li className="list-item">
@@ -11,6 +11,9 @@ export function Todo({ checked, todoName, markTodo, deleteTodo }) {
           />
           <span data-list-item-text>{todoName}</span>
         </label>
+        <button data-button-edit onClick={editTodo}>
+          Edit
+        </button>
         <button onClick={deleteTodo} data-button-delete>
           Delete
         </button>

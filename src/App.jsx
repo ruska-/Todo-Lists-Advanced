@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
+import { NewTodoForm } from "./NewTodoForm";
 
 const LOCAL_STORAGE_KEY = "TODO_ITEMS";
 const LOCAL_STORAGE_HIDE = "TODO_HIDE_COMPLETED";
@@ -10,11 +11,11 @@ const ACTIONS = {
   MARK_TODO: "MARK_TODO",
   ADD_TODO: "ADD_TODO",
   DELETE_TODO: "DELETE_TODO",
+  EDIT_TODO: "EDIT_TODO",
 };
 
 function App() {
-  const newTodoRef = useRef();
-  const [state, dispatch] = useReducer(reducer, { todosArr: [] }, () => {
+  const [todos, dispatch] = useReducer(reducer, { todosArr: [] }, () => {
     let result = { todosArr: [] };
     const storedValue = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedValue !== null) {
@@ -25,6 +26,7 @@ function App() {
   });
 
   const [filterValue, setFilterValue] = useState("");
+
   const [hideCompleted, setHideCompleted] = useState(() => {
     let storedValue = localStorage.getItem(LOCAL_STORAGE_HIDE);
     if (storedValue !== null && storedValue === "true") return true;
@@ -34,15 +36,15 @@ function App() {
   let todosArrayToShow = filterArray();
 
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state.todosArr));
-  }, [state.todosArr, LOCAL_STORAGE_KEY]);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos.todosArr));
+  }, [todos.todosArr, LOCAL_STORAGE_KEY]);
 
-  function reducer(state, { type, payload }) {
+  function reducer(todos, { type, payload }) {
     switch (type) {
       case ACTIONS.MARK_TODO:
         return {
-          ...state,
-          todosArr: state.todosArr.map((todo) => {
+          ...todos,
+          todosArr: todos.todosArr.map((todo) => {
             if (todo.id === payload.id) {
               return { ...todo, checked: !todo.checked };
             } else {
@@ -52,33 +54,30 @@ function App() {
         };
       case ACTIONS.DELETE_TODO:
         return {
-          ...state,
-          todosArr: state.todosArr.filter((todo) => todo.id !== payload.id),
+          ...todos,
+          todosArr: todos.todosArr.filter((todo) => todo.id !== payload.id),
         };
       case ACTIONS.ADD_TODO:
-        if (newTodoRef.current.value === "") return state;
-        else {
-          const newTodoItem = {
-            todoName: newTodoRef.current.value,
-            checked: false,
-            markTodo: () => markTodo(id),
-            deleteTodo: () => deleteTodo(id),
-            id: crypto.randomUUID(),
-          };
-
-          return {
-            ...state,
-            todosArr: [...state.todosArr, newTodoItem],
-          };
-        }
+        return {
+          ...todos,
+          todosArr: [
+            ...todos.todosArr,
+            {
+              todoName: payload.name,
+              checked: false,
+              id: crypto.randomUUID(),
+            },
+          ],
+        };
+      case ACTIONS.EDIT_TODO:
+        return todos;
       default:
-        return state;
+        return todos;
     }
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    dispatch({ type: ACTIONS.ADD_TODO });
+  function addTodo(name) {
+    dispatch({ type: ACTIONS.ADD_TODO, payload: { name } });
   }
 
   function handleFilterSubmit(e) {
@@ -87,7 +86,7 @@ function App() {
   }
 
   function filterArray() {
-    let resultArr = state.todosArr.filter((td) => {
+    let resultArr = todos.todosArr.filter((td) => {
       if (td.todoName.includes(filterValue)) {
         if (!hideCompleted || !td.checked) {
           return td;
@@ -144,15 +143,17 @@ function App() {
                   payload: { id: todoItem.id },
                 })
               }
+              editTodo={() =>
+                dispatch({
+                  type: ACTIONS.EDIT_TODO,
+                  payload: { id: todoItem.id },
+                })
+              }
             ></Todo>
           ))}
         </ul>
       </div>
-      <form onSubmit={handleSubmit} id="new-todo-form">
-        <label htmlFor="todo-input">New Todo</label>
-        <input ref={newTodoRef} type="text" id="todo-input"></input>
-        <button>Add Todo</button>
-      </form>
+      <NewTodoForm addTodo={addTodo}></NewTodoForm>
     </>
   );
 }
