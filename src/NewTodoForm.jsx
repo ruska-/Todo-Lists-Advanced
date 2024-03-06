@@ -1,13 +1,16 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
+import { TodoContext } from "./App";
 
-export function NewTodoForm({ addTodo }) {
+export function NewTodoForm() {
+  const { addTodo } = useContext(TodoContext);
+
   function handleSubmit(e) {
     e.preventDefault();
 
     if (newTodoRef.current.value === "") return;
 
     addTodo(newTodoRef.current.value);
-    
+
     newTodoRef.current.value = "";
   }
 

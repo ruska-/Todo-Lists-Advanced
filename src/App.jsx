@@ -1,4 +1,11 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import "./styles.css";
 import { Todo } from "./Todo";
 import { NewTodoForm } from "./NewTodoForm";
@@ -14,6 +21,8 @@ const ACTIONS = {
   DELETE_TODO: "DELETE_TODO",
   EDIT_TODO: "EDIT_TODO",
 };
+
+export const TodoContext = createContext();
 
 function reducer(todos, { type, payload }) {
   switch (type) {
@@ -59,8 +68,6 @@ function App() {
     else return false;
   });
 
-  let filteredArray = filterArray();
-
   function addTodo(name) {
     dispatch({ type: ACTIONS.ADD_TODO, payload: { name } });
   }
@@ -81,18 +88,22 @@ function App() {
     setFilterValue("");
   }
 
-  function filterArray() {
-    let resultArr = todos.filter((td) => {
-      if (td.todoName.includes(filterValue)) {
-        if (!hideCompleted || !td.checked) return td;
-      }
-    });
-
-    return resultArr;
-  }
+  const filteredTodos = todos.filter((td) => {
+    if (td.todoName.includes(filterValue)) {
+      if (!hideCompleted || !td.checked) return td;
+    }
+  });
 
   return (
-    <>
+    <TodoContext.Provider
+      value={{
+        todos: filteredTodos,
+        addTodo,
+        markCompleted,
+        deleteTodo,
+        editTodo,
+      }}
+    >
       <form onSubmit={handleFilterSubmit} className="filter-form">
         <div className="filter-form-group">
           <label htmlFor="name">Name</label>
@@ -116,15 +127,10 @@ function App() {
         </label>
       </form>
 
-      <TodoList
-        filteredArray={filterArray()}
-        markCompleted={markCompleted}
-        deleteTodo={deleteTodo}
-        editTodo={editTodo}
-      ></TodoList>
+      <TodoList></TodoList>
 
-      <NewTodoForm addTodo={addTodo}></NewTodoForm>
-    </>
+      <NewTodoForm></NewTodoForm>
+    </TodoContext.Provider>
   );
 }
 
