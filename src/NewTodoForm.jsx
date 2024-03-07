@@ -19,7 +19,7 @@ export function NewTodoForm() {
   return (
     <form onSubmit={handleSubmit} id="new-todo-form">
       <label htmlFor="todo-input">New Todo</label>
-      <input ref={newTodoRef} type="text" id="todo-input"></input>
+      <input autoFocus ref={newTodoRef} type="text" id="todo-input"></input>
       <button>Add Todo</button>
     </form>
   );

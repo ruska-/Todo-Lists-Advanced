@@ -6,31 +6,25 @@ export function Todo({ checked, todoName, id }) {
   const [isEditing, setIsEditing] = useState(false);
   const editNameRef = useRef(null);
 
-  function handleSaveClick() {
+  function handleSaveClick(e) {
+    e.preventDefault();
     setIsEditing(false);
     editTodo(id, editNameRef.current.value);
   }
-
-  useEffect(() => {
-    if (isEditing && editNameRef.current) {
-      editNameRef.current.focus();
-    }
-  }, [isEditing]);
 
   return (
     <>
       <li className="list-item">
         {isEditing ? (
-          <>
+          <form onSubmit={handleSaveClick}>
             <input
+              autoFocus
               type="text"
               ref={editNameRef}
               defaultValue={todoName}
             ></input>
-            <button data-button-edit onClick={handleSaveClick}>
-              Save
-            </button>
-          </>
+            <button data-button-edit>Save</button>
+          </form>
         ) : (
           <label className="list-item-label">
             <input
