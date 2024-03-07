@@ -9,6 +9,9 @@ export function Todo({ checked, todoName, id }) {
   function handleSaveClick(e) {
     e.preventDefault();
     setIsEditing(false);
+
+    if (editNameRef.current.value === "") return;
+
     editTodo(id, editNameRef.current.value);
   }
 
@@ -26,22 +29,24 @@ export function Todo({ checked, todoName, id }) {
             <button data-button-edit>Save</button>
           </form>
         ) : (
-          <label className="list-item-label">
-            <input
-              type="checkbox"
-              onChange={() => markTodo(id)}
-              checked={checked}
-              data-list-item-checkbox
-            />
-            <span data-list-item-text>{todoName}</span>
-          </label>
+          <>
+            <label className="list-item-label">
+              <input
+                type="checkbox"
+                onChange={() => markTodo(id)}
+                checked={checked}
+                data-list-item-checkbox
+              />
+              <span data-list-item-text>{todoName}</span>
+            </label>
+            <button data-button-edit onClick={() => setIsEditing(true)}>
+              Edit
+            </button>
+            <button onClick={() => deleteTodo(id)} data-button-delete>
+              Delete
+            </button>
+          </>
         )}
-        <button data-button-edit onClick={() => setIsEditing(true)}>
-          Edit
-        </button>
-        <button onClick={() => deleteTodo(id)} data-button-delete>
-          Delete
-        </button>
       </li>
     </>
   );
