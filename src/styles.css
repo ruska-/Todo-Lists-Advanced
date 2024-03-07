@@ -39,7 +39,8 @@ button {
   cursor: pointer;
 }
 
-[data-button-edit] {
+[data-button-edit],
+[data-button-save] {
   margin-left: 0.5rem;
 }
 

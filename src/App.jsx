@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
+import { createContext, useEffect, useReducer, useState } from "react";
 import "./styles.css";
 import { NewTodoForm } from "./NewTodoForm";
 import { TodoList } from "./TodoList";
@@ -40,7 +35,11 @@ function reducer(todos, { type, payload }) {
       ];
 
     case ACTIONS.EDIT_TODO:
-      return todos;
+      return todos.map((td) => {
+        if (td.id === payload.id) {
+          return { ...td, todoName: payload.name };
+        } else return td;
+      });
 
     default:
       return todos;
@@ -77,8 +76,8 @@ function App() {
   function deleteTodo(id) {
     dispatch({ type: ACTIONS.DELETE_TODO, payload: { id: id } });
   }
-  function editTodo(id) {
-    dispatch({ type: ACTIONS.EDIT_TODO, payload: { id: id } });
+  function editTodo(id, name) {
+    dispatch({ type: ACTIONS.EDIT_TODO, payload: { id: id, name: name } });
   }
 
   const filteredTodos = todos.filter((td) => {
